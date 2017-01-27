@@ -6,7 +6,7 @@ import math
 
 
 class Snake:
-    def __init__(self, game_map, head, gen):
+    def __init__(self, game_map, head, gen, game_canvas):
         self.game_map = game_map
         self.direction = gen[0]
         self.body = head
@@ -14,10 +14,12 @@ class Snake:
         self.fitness = 0
         self.count_move = 0
         self.reached = False
+        self.game_canvas = game_canvas
 
     def calcualte_fitness(self):
         self.fitness = self.body.position.x + self.body.position.y - self.count_move
         self.body.type = BlockType.Normal
+        self.game_canvas.itemconfig(self.body.rectangle, fill="black")
 
     def check_direction(self, step):
         if self.direction == UP:
@@ -36,11 +38,11 @@ class Snake:
         return True
 
     def move(self, step):
-        if self.check_direction(self.gen[step]) :
+        if self.check_direction(self.gen[step]):
             self.direction = self.gen[step]
         else:
             if self.reached is False:
-                self.count_move += 2
+                self.count_move += 3
             return
         head = self.body
         to_pos = [
@@ -60,14 +62,19 @@ class Snake:
         to = self.game_map[to_pos[0]][to_pos[1]]
         if to.type == BlockType.Wall:
             if self.reached is False:
-                self.count_move += 2
+                self.count_move += 3
             pass
         else:
             to.type = BlockType.Snake
+            self.game_canvas.itemconfig(self.body.rectangle, fill="black")
+            self.game_canvas.itemconfig(to.rectangle, fill="white")
             self.body.type = BlockType.Normal
             self.body = to
             if self.reached is False:
-                self.count_move += 1
+                if self.direction == UP or self.direction == LEFT:
+                    self.count_move += 2
+                else:
+                    self.count_move += 1
             if self.body.position.x == GOAL[
                     0] and self.body.position.y == GOAL[1]:
                 self.reached = True

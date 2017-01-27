@@ -20,34 +20,21 @@ def create_blocks():
             block = Block(Point(i * BLOCK_SIZE, j * BLOCK_SIZE))
             if uniform(0, 1) < WALL_RATE:
                 block.type = BlockType.Wall
+            block.rectangle = game_canvas.create_rectangle(
+                (block.position.x, block.position.y),
+                (block.position.x + BLOCK_SIZE, block.position.y + BLOCK_SIZE),
+                fill='black',
+                outline='black')
             temp.append(block)
         blocks.append(temp)
     return blocks
-
-
-def init_foods():
-    new_foods = []
-    for i in range(FOODS_AMOUNT):
-        new_foods.append(create_food())
-    return new_foods
-
-
-def create_food():
-    """
-    Create a food at random location in the map
-    """
-    pos = Point(randint(0, MAP_HEIGHT - 1), randint(0, MAP_WIDTH - 1))
-    while map_blocks[pos.x][pos.y].type != BlockType.Normal:
-        pos = Point(randint(0, MAP_HEIGHT - 1), randint(0, MAP_WIDTH - 1))
-    map_blocks[pos.x][pos.y].type = BlockType.Food
-    return map_blocks[pos.x][pos.y]
 
 
 def create_snake(code, gen):
     """
     create a snakes at random location in the map
     """
-    new_snake = Snake(map_blocks, map_blocks[1][1], gen)
+    new_snake = Snake(map_blocks, map_blocks[1][1], gen, game_canvas)
     return new_snake
 
 
@@ -59,51 +46,7 @@ def update(step, draw):
     for snake in snakes:
         snake.move(step)
         if (draw):
-            draw_game()
             root.update()
-            time.sleep(GAME_SPEED)
-    consumed_food = 0
-    to_delete_food = []
-    for i in range(len(foods)):
-        if foods[i].type != BlockType.Food:
-            to_delete_food.append(foods[i])
-            consumed_food += 1
-    for i in range(len(to_delete_food)):
-        foods.remove(to_delete_food[i])
-    for i in range(consumed_food):
-        foods.append(create_food())
-
-
-def draw_game():
-    """
-    draw the game by drawing each block depent on it's type
-    """
-    game_canvas.delete("all")
-    for blocks in map_blocks:
-        for block in blocks:
-            if block.type == BlockType.Normal:
-                pass
-            elif block.type == BlockType.Food:
-                game_canvas.create_rectangle(
-                    (block.position.x, block.position.y),
-                    (block.position.x + BLOCK_SIZE,
-                     block.position.y + BLOCK_SIZE),
-                    fill='red',
-                    outline='black')
-            elif block.type == BlockType.Wall:
-                game_canvas.create_rectangle(
-                    (block.position.x, block.position.y),
-                    (block.position.x + BLOCK_SIZE,
-                     block.position.y + BLOCK_SIZE),
-                    fill='blue',
-                    outline='black')
-            else:
-                game_canvas.create_rectangle(
-                    (block.position.x, block.position.y),
-                    (block.position.x + BLOCK_SIZE,
-                     block.position.y + BLOCK_SIZE),
-                    fill='white',
-                    outline='black')
 
 
 def calculate_fitness():
@@ -131,7 +74,7 @@ def select():
     total_fitness = get_total_fitness()
     selected_gens.append(snakes[0].gen)
     while len(selected_gens) < int(POPULATION_SIZE / 2):
-        rd = uniform(0, total_fitness-1)
+        rd = uniform(0, total_fitness - 1)
         sum_fitness = 0
         for snake in snakes:
             sum_fitness += snake.fitness
@@ -160,16 +103,16 @@ def breed():
     for couple in couples:
         childrens += cross_over(couple)
     mutation(childrens)
-    new_generation+=childrens
+    new_generation += childrens
     snakes.clear()
     for i in range(len(new_generation)):
         snakes.append(create_snake(i, new_generation[i]))
 
 
 def cross_over(parents):
-    children = [[],[]]
+    children = [[], []]
     for i in range(LIFE_TIME):
-        if i%2==0:
+        if i % 2 == 0:
             children[0].append(parents[0][i])
             children[1].append(parents[1][i])
         else:
@@ -212,7 +155,7 @@ def start_game():
     generation = 1
     i = LIFE_TIME
     while i > 0:
-        if generation % 100 == 0:
+        if generation % 10 == 0:
             update(step, True)
         else:
             update(step, False)
@@ -255,9 +198,15 @@ game_canvas.grid(row=0, column=0, columnspan=2)
 
 map_blocks = create_blocks()
 bound_wall()
-
-foods = init_foods()
+for blocks in map_blocks:
+    for block in blocks:
+        if block.type == BlockType.Wall:
+            game_canvas.itemconfig(block.rectangle, fill="blue")
 snakes = init_population()
+for blocks in map_blocks:
+    for block in blocks:
+        if block.type == BlockType.Snake:
+            game_canvas.itemconfig(block.rectangle, fill="white")
 root.title("Snake evolution")
 root.after(500, start_game)
 root.mainloop()
