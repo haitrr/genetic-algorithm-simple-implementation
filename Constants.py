@@ -1,0 +1,26 @@
+"""Contain all the constants in the program"""
+
+BLOCK_SIZE = 10
+
+MAP_WIDTH = 30
+MAP_HEIGHT = 30
+
+POPULATION_SIZE = 32
+
+GOAL = (48, 48)
+
+MUTATION_RATE = 0.02
+
+WALL_RATE = 0.1
+
+LIFE_TIME = MAP_WIDTH + MAP_WIDTH + int((MAP_WIDTH + MAP_HEIGHT) / 2)
+
+FOODS_AMOUNT = 5
+GAME_SPEED = 0.002
+
+LEFT = (-1, 0)
+UP = (0, -1)
+RIGHT = (1, 0)
+DOWN = (0, 1)
+
+DIRECTION = [UP, DOWN, RIGHT, LEFT]
