@@ -167,11 +167,14 @@ def breed():
 
 
 def cross_over(parents):
-    children = []
-    children.append(parents[0][:int(len(parents[0]) / 2)] + parents[1][int(
-        len(parents[0]) / 2):])
-    children.append(parents[1][:int(len(parents[0]) / 2)] + parents[0][int(
-        len(parents[0]) / 2):])
+    children = [[],[]]
+    for i in range(LIFE_TIME):
+        if i%2==0:
+            children[0].append(parents[0][i])
+            children[1].append(parents[1][i])
+        else:
+            children[1].append(parents[0][i])
+            children[0].append(parents[1][i])
     return children
 
 
