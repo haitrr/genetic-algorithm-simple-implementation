@@ -12,12 +12,36 @@ class Snake:
         self.body = head
         self.gen = gen
         self.fitness = 0
-    
+        self.count_move = 0
+        self.reached = False
+
     def calcualte_fitness(self):
-        self.fitness =math.sqrt(GOAL[0]**2+GOAL[1]**2) - math.sqrt((GOAL[0]-self.body.position.x)**2+(GOAL[1]-self.body.position.y)**2)
-        self.body.type=BlockType.Normal
+        self.fitness = self.body.position.x + self.body.position.y - self.count_move
+        self.body.type = BlockType.Normal
+
+    def check_direction(self, step):
+        if self.direction == UP:
+            if step == DOWN:
+                return False
+        elif self.direction == DOWN:
+            if step == UP:
+                return False
+
+        elif self.direction == LEFT:
+            if step == RIGHT:
+                return False
+        elif self.direction == RIGHT:
+            if step == LEFT:
+                return False
+        return True
+
     def move(self, step):
-        self.direction = self.gen[step]
+        if self.check_direction(self.gen[step]) :
+            self.direction = self.gen[step]
+        else:
+            if self.reached is False:
+                self.count_move += 2
+            return
         head = self.body
         to_pos = [
             int(head.position.x / BLOCK_SIZE),
@@ -35,8 +59,15 @@ class Snake:
             to_pos[1] = to_pos[1] + MAP_WIDTH
         to = self.game_map[to_pos[0]][to_pos[1]]
         if to.type == BlockType.Wall:
+            if self.reached is False:
+                self.count_move += 2
             pass
         else:
             to.type = BlockType.Snake
             self.body.type = BlockType.Normal
             self.body = to
+            if self.reached is False:
+                self.count_move += 1
+            if self.body.position.x == GOAL[
+                    0] and self.body.position.y == GOAL[1]:
+                self.reached = True

@@ -61,7 +61,7 @@ def update(step, draw):
         if (draw):
             draw_game()
             root.update()
-            #time.sleep(GAME_SPEED)
+            time.sleep(GAME_SPEED)
     consumed_food = 0
     to_delete_food = []
     for i in range(len(foods)):
@@ -129,16 +129,16 @@ def select():
     selected_gens = []
     snakes.sort(key=lambda x: x.fitness, reverse=True)
     total_fitness = get_total_fitness()
-    selected_gens.append(snakes[-1].gen)
+    selected_gens.append(snakes[0].gen)
     while len(selected_gens) < int(POPULATION_SIZE / 2):
-        rd = uniform(0, total_fitness)
+        rd = uniform(0, total_fitness-1)
         sum_fitness = 0
         for snake in snakes:
             sum_fitness += snake.fitness
             if sum_fitness > rd:
                 if snake.gen not in selected_gens:
                     selected_gens.append(snake.gen)
-                break
+                    break
     return selected_gens
 
 
@@ -212,7 +212,7 @@ def start_game():
     generation = 1
     i = LIFE_TIME
     while i > 0:
-        if generation % 20 == 0:
+        if generation % 100 == 0:
             update(step, True)
         else:
             update(step, False)
