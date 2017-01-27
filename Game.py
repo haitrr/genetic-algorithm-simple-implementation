@@ -17,7 +17,7 @@ def create_blocks():
     for i in range(MAP_HEIGHT):
         temp = []
         for j in range(MAP_WIDTH):
-            block = Block(Point(i * BLOCK_SIZE, j * BLOCK_SIZE))
+            block = Block(Point(j * BLOCK_SIZE, i * BLOCK_SIZE))
             if uniform(0, 1) < WALL_RATE:
                 block.type = BlockType.Wall
             block.rectangle = game_canvas.create_rectangle(
@@ -61,16 +61,13 @@ def evolution():
 
 
 def update_max_fitness():
-    max_fitness = -1
-    for snake in snakes:
-        if snake.fitness > max_fitness:
-            max_fitness = snake.fitness
+    snakes.sort(key=lambda x: x.fitness, reverse=True)
+    max_fitness = snakes[0].fitness
     max_fitness_label.config(text="Max: " + str(int(max_fitness)))
 
 
 def select():
     selected_gens = []
-    snakes.sort(key=lambda x: x.fitness, reverse=True)
     total_fitness = get_total_fitness()
     selected_gens.append(snakes[0].gen)
     while len(selected_gens) < int(POPULATION_SIZE / 2):
@@ -93,9 +90,10 @@ def get_total_fitness():
 
 
 def breed():
+    global best_snake
     selected_parents = select()
+    new_generation = selected_parents[:]
     shuffle(selected_parents)
-    new_generation = selected_parents
     childrens = []
     couples = [
         selected_parents[x:x + 2] for x in range(0, len(selected_parents), 2)
@@ -107,6 +105,9 @@ def breed():
     snakes.clear()
     for i in range(len(new_generation)):
         snakes.append(create_snake(i, new_generation[i]))
+    best_snake.best = False
+    best_snake = snakes[0]
+    snakes[0].best = True
 
 
 def cross_over(parents):
@@ -155,7 +156,7 @@ def start_game():
     generation = 1
     i = LIFE_TIME
     while i > 0:
-        if generation % 10 == 0:
+        if generation % DRAW_CIRCLE == 0:
             update(step, True)
         else:
             update(step, False)
@@ -207,6 +208,7 @@ for blocks in map_blocks:
     for block in blocks:
         if block.type == BlockType.Snake:
             game_canvas.itemconfig(block.rectangle, fill="white")
+best_snake = snakes[0]
 root.title("Snake evolution")
 root.after(500, start_game)
 root.mainloop()

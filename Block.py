@@ -10,4 +10,5 @@ class Block:
         self.position = position
         self.rectangle = None
         self.type = BlockType.Normal
+        self.track = False
 

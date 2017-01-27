@@ -15,12 +15,18 @@ class Snake:
         self.count_move = 0
         self.reached = False
         self.game_canvas = game_canvas
+        self.best = False
+        self.track = []
 
     def calcualte_fitness(self):
-        self.fitness = self.body.position.x + self.body.position.y - self.count_move
+        self.fitness = self.body.position.x/BLOCK_SIZE + self.body.position.y/BLOCK_SIZE - self.count_move
         self.body.type = BlockType.Normal
         self.game_canvas.itemconfig(self.body.rectangle, fill="black")
-
+        if self.best:
+            for block in self.track:
+                block.track = False
+                self.game_canvas.itemconfig(block.rectangle, fill="black")
+            self.track.clear()
     def check_direction(self, step):
         if self.direction == UP:
             if step == DOWN:
@@ -42,12 +48,12 @@ class Snake:
             self.direction = self.gen[step]
         else:
             if self.reached is False:
-                self.count_move += 3
+                self.count_move += 100000
             return
         head = self.body
         to_pos = [
-            int(head.position.x / BLOCK_SIZE),
-            int(head.position.y / BLOCK_SIZE)
+            int(head.position.y / BLOCK_SIZE),
+            int(head.position.x / BLOCK_SIZE)
         ]
         to_pos[0] = to_pos[0] + self.direction[0]
         if to_pos[0] >= MAP_HEIGHT:
@@ -62,17 +68,30 @@ class Snake:
         to = self.game_map[to_pos[0]][to_pos[1]]
         if to.type == BlockType.Wall:
             if self.reached is False:
-                self.count_move += 3
+                self.count_move += 100000
             pass
         else:
             to.type = BlockType.Snake
-            self.game_canvas.itemconfig(self.body.rectangle, fill="black")
-            self.game_canvas.itemconfig(to.rectangle, fill="white")
+            if self.best:
+                self.game_canvas.itemconfig(self.body.rectangle, fill="red")
+                self.body.track = True
+                self.track.append(self.body)
+            else:
+                if self.body.track:
+                    self.game_canvas.itemconfig(
+                        self.body.rectangle, fill="red")
+                else:
+                    self.game_canvas.itemconfig(
+                        self.body.rectangle, fill="black")
+            if self.best is False:
+                self.game_canvas.itemconfig(to.rectangle, fill="white")
+            else:
+                self.game_canvas.itemconfig(to.rectangle, fill="red")
             self.body.type = BlockType.Normal
             self.body = to
             if self.reached is False:
                 if self.direction == UP or self.direction == LEFT:
-                    self.count_move += 2
+                    self.count_move += 5
                 else:
                     self.count_move += 1
             if self.body.position.x == GOAL[
