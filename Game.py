@@ -5,7 +5,7 @@ from Constants import *
 from Block import *
 from Point import Point
 from random import randint, shuffle, uniform
-from Snake import *
+from Walker import *
 import time
 
 
@@ -30,12 +30,12 @@ def create_blocks():
     return blocks
 
 
-def create_snake(code, gen):
+def create_walker(code, gen):
     """
-    create a snakes at random location in the map
+    create a walkers at random location in the map
     """
-    new_snake = Snake(map_blocks, map_blocks[1][1], gen, game_canvas)
-    return new_snake
+    new_walker = walker(map_blocks, map_blocks[1][1], gen, game_canvas)
+    return new_walker
 
 
 def update(step):
@@ -43,16 +43,16 @@ def update(step):
     Update the game
     """
     global draw
-    shuffle(snakes)
-    for snake in snakes:
-        snake.move(step)
+    shuffle(walkers)
+    for walker in walkers:
+        walker.move(step)
         if (draw):
             root.update()
 
 
 def calculate_fitness():
-    for snake in snakes:
-        snake.calcualte_fitness()
+    for walker in walkers:
+        walker.calcualte_fitness()
 
 
 def evolution():
@@ -63,10 +63,10 @@ def evolution():
 
 def update_max_fitness():
     global max_fitness, draw
-    snakes.sort(key=lambda x: x.fitness, reverse=True)
-    if snakes[0].fitness > max_fitness:
+    walkers.sort(key=lambda x: x.fitness, reverse=True)
+    if walkers[0].fitness > max_fitness:
         draw = True
-        max_fitness = snakes[0].fitness
+        max_fitness = walkers[0].fitness
     else:
         draw = False
     max_fitness_label.config(text="Max: " + str(int(max_fitness)))
@@ -75,28 +75,28 @@ def update_max_fitness():
 def select():
     selected_gens = []
     total_fitness = get_total_fitness()
-    selected_gens.append(snakes[0].gen)
+    selected_gens.append(walkers[0].gen)
     while len(selected_gens) < int(POPULATION_SIZE / 2):
         rd = uniform(0, total_fitness - 1)
         sum_fitness = 0
-        for snake in snakes:
-            sum_fitness += snake.fitness
+        for walker in walkers:
+            sum_fitness += walker.fitness
             if sum_fitness > rd:
-                if snake.gen not in selected_gens:
-                    selected_gens.append(snake.gen)
+                if walker.gen not in selected_gens:
+                    selected_gens.append(walker.gen)
                     break
     return selected_gens
 
 
 def get_total_fitness():
     total = 0
-    for snake in snakes:
-        total += snake.fitness
+    for walker in walkers:
+        total += walker.fitness
     return total
 
 
 def breed():
-    global best_snake
+    global best_walker
     selected_parents = select()
     new_generation = selected_parents[:]
     shuffle(selected_parents)
@@ -110,12 +110,12 @@ def breed():
             [DIRECTION[randint(0, 3)] for i in range(LIFE_TIME)])
     mutation(childrens)
     new_generation += childrens
-    snakes.clear()
+    walkers.clear()
     for i in range(len(new_generation)):
-        snakes.append(create_snake(i, new_generation[i]))
-    best_snake.best = False
-    best_snake = snakes[0]
-    snakes[0].best = True
+        walkers.append(create_walker(i, new_generation[i]))
+    best_walker.best = False
+    best_walker = walkers[0]
+    walkers[0].best = True
 
 
 def cross_over(parents):
@@ -145,12 +145,12 @@ def mutate(gen):
 
 def init_population():
     """
-    Create first generation of snakes
+    Create first generation of walkers
     """
     population = []
     for i in range(POPULATION_SIZE):
         gen = [DIRECTION[randint(0, 3)] for i in range(LIFE_TIME)]
-        population.append(create_snake(i, gen))
+        population.append(create_walker(i, gen))
     return population
 
 
@@ -184,6 +184,11 @@ def bound_wall():
         map_blocks[i][MAP_WIDTH - 1].type = BlockType.Wall
 
 
+def exit_program():
+    root.destroy()
+    exit()
+
+
 root = Tk()
 root.resizable(width=False, height=False)
 root.grid()
@@ -209,12 +214,13 @@ for blocks in map_blocks:
     for block in blocks:
         if block.type == BlockType.Wall:
             game_canvas.itemconfig(block.rectangle, fill="blue")
-snakes = init_population()
+walkers = init_population()
 for blocks in map_blocks:
     for block in blocks:
-        if block.type == BlockType.Snake:
+        if block.type == BlockType.Walker:
             game_canvas.itemconfig(block.rectangle, fill="white")
-best_snake = snakes[0]
-root.title("Snake evolution")
+best_walker = walkers[0]
+root.title("walker evolution")
+root.protocol("WM_DELETE_WINDOW", exit_program)
 root.after(500, start_game)
 root.mainloop()

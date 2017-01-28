@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 
-class Snake:
+class walker:
     def __init__(self, game_map, head, gen, game_canvas):
         self.game_map = game_map
         self.direction = gen[0]
@@ -62,7 +62,7 @@ class Snake:
                 self.count_move += 10
             pass
         else:
-            to.type = BlockType.Snake
+            to.type = BlockType.Walker
             if self.best:
                 self.game_canvas.itemconfig(self.body.rectangle, fill="red")
                 self.body.track = True
