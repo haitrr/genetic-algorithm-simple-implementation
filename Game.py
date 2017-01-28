@@ -38,10 +38,11 @@ def create_snake(code, gen):
     return new_snake
 
 
-def update(step, draw):
+def update(step):
     """
     Update the game
     """
+    global draw
     shuffle(snakes)
     for snake in snakes:
         snake.move(step)
@@ -61,8 +62,13 @@ def evolution():
 
 
 def update_max_fitness():
+    global max_fitness, draw
     snakes.sort(key=lambda x: x.fitness, reverse=True)
-    max_fitness = snakes[0].fitness
+    if snakes[0].fitness > max_fitness:
+        draw = True
+        max_fitness = snakes[0].fitness
+    else:
+        draw = False
     max_fitness_label.config(text="Max: " + str(int(max_fitness)))
 
 
@@ -100,6 +106,8 @@ def breed():
     ]
     for couple in couples:
         childrens += cross_over(couple)
+        new_generation.append(
+            [DIRECTION[randint(0, 3)] for i in range(LIFE_TIME)])
     mutation(childrens)
     new_generation += childrens
     snakes.clear()
@@ -111,13 +119,11 @@ def breed():
 
 
 def cross_over(parents):
-    children = [[], []]
+    children = [[]]
     for i in range(LIFE_TIME):
         if i % 2 == 0:
             children[0].append(parents[0][i])
-            children[1].append(parents[1][i])
         else:
-            children[1].append(parents[0][i])
             children[0].append(parents[1][i])
     return children
 
@@ -152,14 +158,12 @@ def start_game():
     """
     Start the game loops
     """
+    global draw
     step = 0
     generation = 1
     i = LIFE_TIME
     while i > 0:
-        if generation % DRAW_CIRCLE == 0:
-            update(step, True)
-        else:
-            update(step, False)
+        update(step)
         step += 1
         i -= 1
         if i == 0:
@@ -197,6 +201,8 @@ game_canvas = Canvas(
     background="black")
 game_canvas.grid(row=0, column=0, columnspan=2)
 
+max_fitness = -1000000
+draw = False
 map_blocks = create_blocks()
 bound_wall()
 for blocks in map_blocks:

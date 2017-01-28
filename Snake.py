@@ -19,7 +19,7 @@ class Snake:
         self.track = []
 
     def calcualte_fitness(self):
-        self.fitness = self.body.position.x/BLOCK_SIZE + self.body.position.y/BLOCK_SIZE - self.count_move
+        self.fitness = self.body.position.x + self.body.position.y - self.count_move
         self.body.type = BlockType.Normal
         self.game_canvas.itemconfig(self.body.rectangle, fill="black")
         if self.best:
@@ -27,20 +27,11 @@ class Snake:
                 block.track = False
                 self.game_canvas.itemconfig(block.rectangle, fill="black")
             self.track.clear()
-    def check_direction(self, step):
-        if self.direction == UP:
-            if step == DOWN:
-                return False
-        elif self.direction == DOWN:
-            if step == UP:
-                return False
 
-        elif self.direction == LEFT:
-            if step == RIGHT:
-                return False
-        elif self.direction == RIGHT:
-            if step == LEFT:
-                return False
+    def check_direction(self, step):
+        if self.direction[0] + step[0] == 0 and self.direction[1] + step[
+                1] == 0:
+            return False
         return True
 
     def move(self, step):
@@ -48,7 +39,7 @@ class Snake:
             self.direction = self.gen[step]
         else:
             if self.reached is False:
-                self.count_move += 100000
+                self.count_move += 10
             return
         head = self.body
         to_pos = [
@@ -68,7 +59,7 @@ class Snake:
         to = self.game_map[to_pos[0]][to_pos[1]]
         if to.type == BlockType.Wall:
             if self.reached is False:
-                self.count_move += 100000
+                self.count_move += 10
             pass
         else:
             to.type = BlockType.Snake
